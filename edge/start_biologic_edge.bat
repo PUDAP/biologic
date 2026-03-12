@@ -1,3 +1,3 @@
 @echo off
-cd /d "C:\Users\bears\workspace\puda\machines\biologic\edge"
+cd /d "%~dp0"
 uv run main.py

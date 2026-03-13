@@ -118,12 +118,29 @@ class Biologic:
     via getattr, enabling command-based execution patterns. Each method (OCV, CA, PEIS, etc.)
     wraps the corresponding base program class and provides a consistent interface.
     
-    Example:
-        machine = BiologicMachine("192.168.1.2")
-        handler = getattr(machine, "OCV", None)  # Get handler dynamically
-        result = handler(params={"time": 60}, channels=[1, 2])
+    Methods accept either a ``params`` dict or flat keyword arguments, so both
+    calling conventions work::
+
+        handler(params={"time": 60}, channels=[1, 2])   # direct call
+        handler(time=60, channels=[1, 2])                # edge_runner **params style
     """
+
+    _META_KEYS = frozenset({
+        'channels', 'retrieve_data', 'data', 'by_channel', 'cv', 'folder',
+    })
     
+    @staticmethod
+    def _split_kwargs(all_kwargs: dict) -> tuple[dict, dict]:
+        """Separate program params from constructor/run meta kwargs."""
+        meta = {}
+        params = {}
+        for k, v in all_kwargs.items():
+            if k in Biologic._META_KEYS:
+                meta[k] = v
+            else:
+                params[k] = v
+        return params, meta
+
     def __init__(self, device_ip: str):
         """
         Initialize the Biologic machine.
@@ -237,7 +254,7 @@ class Biologic:
     
     def OCV(
         self,
-        params: dict[str, Any],
+        params: dict[str, Any] | None = None,
         **kwargs
     ) -> Dict[str, Any]:
         """
@@ -255,12 +272,14 @@ class Biologic:
         Returns:
             Dictionary containing the OCV data (keyed by channel)
         """
+        if params is None:
+            params, kwargs = self._split_kwargs(kwargs)
         logger.info("Running OCV test: params=%s, kwargs=%s", params, kwargs)
         return self._run_base_program(blp.OCV, params, **kwargs)
         
     def CA(
         self,
-        params: dict[str, Any],
+        params: dict[str, Any] | None = None,
         **kwargs
     ) -> Dict[str, Any]:
         """
@@ -281,12 +300,14 @@ class Biologic:
         Returns:
             Dictionary containing the CA data (keyed by channel)
         """
+        if params is None:
+            params, kwargs = self._split_kwargs(kwargs)
         logger.info("Running CA test: params=%s, kwargs=%s", params, kwargs)
         return self._run_base_program(blp.CA, params, **kwargs)
 
     def CP(
         self,
-        params: dict[str, Any],
+        params: dict[str, Any] | None = None,
         **kwargs
     ) -> Dict[str, Any]:
         """
@@ -303,13 +324,15 @@ class Biologic:
                 - channels: Optional list of channel numbers
                 - retrieve_data: Whether to automatically retrieve data after running [Default: True]
         """
+        if params is None:
+            params, kwargs = self._split_kwargs(kwargs)
         logger.info("Running CP test: params=%s, kwargs=%s", params, kwargs)
         return self._run_base_program(blp.CP, params, **kwargs)
 
   
     def PEIS(
         self,
-        params: dict[str, Any],
+        params: dict[str, Any] | None = None,
         **kwargs
     ) -> Dict[str, Any]:
         """
@@ -337,13 +360,15 @@ class Biologic:
         Returns:
             Dictionary containing the PEIS data (keyed by channel)
         """
+        if params is None:
+            params, kwargs = self._split_kwargs(kwargs)
         logger.info("Running PEIS test: params=%s, kwargs=%s", params, kwargs)
         return self._run_base_program(blp.PEIS, params, **kwargs)
 
 
     def GEIS(
         self,
-        params: dict[str, Any],
+        params: dict[str, Any] | None = None,
         **kwargs
     ) -> Dict[str, Any]:
         """
@@ -371,12 +396,14 @@ class Biologic:
         Returns:
             Dictionary containing the GEIS data (keyed by channel)
         """
+        if params is None:
+            params, kwargs = self._split_kwargs(kwargs)
         logger.info("Running GEIS test: params=%s, kwargs=%s", params, kwargs)
         return self._run_base_program(blp.GEIS, params, **kwargs)
       
     def CV(
         self,
-        params: dict[str, Any],
+        params: dict[str, Any] | None = None,
         **kwargs
     ) -> Dict[str, Any]:
         """
@@ -401,12 +428,14 @@ class Biologic:
         Returns:
             Dictionary containing the CV data (keyed by channel)
         """
+        if params is None:
+            params, kwargs = self._split_kwargs(kwargs)
         logger.info("Running CV test: params=%s, kwargs=%s", params, kwargs)
         return self._run_base_program(blp.CV, params, **kwargs)
       
     def MPP_Tracking(
         self,
-        params: dict[str, Any],
+        params: dict[str, Any] | None = None,
         **kwargs
     ) -> Dict[str, Any]:
         """
@@ -428,12 +457,14 @@ class Biologic:
         Returns:
             Dictionary containing the MPP_Tracking data (keyed by channel)
         """
+        if params is None:
+            params, kwargs = self._split_kwargs(kwargs)
         logger.info("Running MPP_Tracking test: params=%s, kwargs=%s", params, kwargs)
         return self._run_base_program(blp.MPP_Tracking, params, **kwargs)
     
     def MPP(
         self,
-        params: dict[str, Any],
+        params: dict[str, Any] | None = None,
         **kwargs
     ) -> Dict[str, Any]:
         """
@@ -457,12 +488,14 @@ class Biologic:
         Returns:
             Dictionary containing the MPP data (keyed by channel)
         """
+        if params is None:
+            params, kwargs = self._split_kwargs(kwargs)
         logger.info("Running MPP test: params=%s, kwargs=%s", params, kwargs)
         return self._run_base_program(blp.MPP, params, **kwargs)
     
     def MPP_Cycles(
         self,
-        params: dict[str, Any],
+        params: dict[str, Any] | None = None,
         **kwargs
     ) -> Dict[str, Any]:
         """
@@ -485,5 +518,7 @@ class Biologic:
         Returns:
             Dictionary containing the MPP_Cycles data (keyed by channel)
         """
+        if params is None:
+            params, kwargs = self._split_kwargs(kwargs)
         logger.info("Running MPP_Cycles test: params=%s, kwargs=%s", params, kwargs)
         return self._run_base_program(blp.MPP_Cycles, params, **kwargs)

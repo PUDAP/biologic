@@ -187,7 +187,7 @@ class Biologic:
             **kwargs: Additional keyword arguments:
                 - For standard programs: retrieve_data [Default: True]
                 - For MPP/MPP_Cycles: data, by_channel, cv
-                - channels: Optional list of channel numbers (for constructor)
+                - channels: List of channel numbers (for constructor). [Required]
             
         Returns:
             Dictionary containing the program data
@@ -197,6 +197,8 @@ class Biologic:
         """
         if self.device is None:
             raise RuntimeError("Device not initialized. Call startup() before running programs.")
+        if "channels" not in kwargs or kwargs["channels"] is None:
+            raise ValueError("'channels' is required and must be provided for all programs.")
         # Convert current_range from string to IRange object if needed
         if 'current_range' in params and isinstance(params['current_range'], str):
             try:
@@ -266,7 +268,7 @@ class Biologic:
                 - time_interval: Maximum time between readings (float, > 0.0002 s). [Default: 1]
                 - voltage_interval: Maximum interval between voltage readings (float, 1e-6 to 1 V). [Default: 0.01]
             **kwargs: Additional keyword arguments passed to program constructor:
-                - channels: Optional list of channel numbers
+                - channels: List of channel numbers. [Required]
                 - retrieve_data: Whether to automatically retrieve data after running [Default: True]
             
         Returns:
@@ -294,7 +296,7 @@ class Biologic:
                 - current_interval: Maximum current change between points (float, ±1e-12 to current_range A). [Default: 0.001]
                 - current_range: Current range. Use ec_lib.IRange (typically ±1 A). Available: IRange.p100 (±100 pA), IRange.n1 (±1 nA), IRange.u1 (±1 µA), IRange.m1 (±1 mA), IRange.m10 (±10 mA), IRange.a1 (±1 A). Can be provided as a string (e.g., "IRange.m10") which will be automatically converted. [Default: IRange.m10]
             **kwargs: Additional keyword arguments passed to program constructor:
-                - channels: Optional list of channel numbers
+                - channels: List of channel numbers. [Required]
                 - retrieve_data: Whether to automatically retrieve data after running [Default: True]
             
         Returns:
@@ -321,7 +323,7 @@ class Biologic:
                 - time_interval: Maximum time interval between points in seconds. (float, 0.0002 to 1000). [Default: 1]
                 - voltage_interval: Maximum voltage change between points in Volts. (float, 1e-4 to 1e-2). [Default: 0.001]
             **kwargs: Additional keyword arguments passed to program constructor:
-                - channels: Optional list of channel numbers
+                - channels: List of channel numbers. [Required]
                 - retrieve_data: Whether to automatically retrieve data after running [Default: True]
         """
         if params is None:
@@ -354,7 +356,7 @@ class Biologic:
                 - correction: Drift correction. [Default: False]
                 - wait: Adds a delay before the measurement at each frequency. The delay is expressed as a fraction of the period. (float, 0 to 5). [Default: 0]
             **kwargs: Additional keyword arguments passed to program constructor:
-                - channels: Optional list of channel numbers
+                - channels: List of channel numbers. [Required]
                 - retrieve_data: Whether to automatically retrieve data after running [Default: True]
 
         Returns:
@@ -390,7 +392,7 @@ class Biologic:
                 - correction: Drift correction. [Default: False]
                 - wait: Adds a delay before the measurement at each frequency. The delay is expressed as a fraction of the period. (float, 0 to 5). [Default: 0]
             **kwargs: Additional keyword arguments passed to program constructor:
-                - channels: Optional list of channel numbers
+                - channels: List of channel numbers. [Required]
                 - retrieve_data: Whether to automatically retrieve data after running [Default: True]
             
         Returns:
@@ -422,7 +424,7 @@ class Biologic:
                 - voltage_range: Voltage range. Use ec_lib.ERange. Available: ERange.v2_5, ERange.v5, ERange.v10, ERange.AUTO. Can be provided as a string (e.g., "ERange.AUTO") which will be automatically converted. [Default: AUTO]
                 - current_range: Current range. Use ec_lib.IRange. Available: IRange.p100 (±100 pA), IRange.n1 (±1 nA), IRange.u1 (±1 µA), IRange.m1 (±1 mA), IRange.m10 (±10 mA), IRange.a1 (±1 A), IRange.AUTO. Can be provided as a string (e.g., "IRange.m10") which will be automatically converted. [Default: AUTO]
             **kwargs: Additional keyword arguments passed to program constructor:
-                - channels: Optional list of channel numbers
+                - channels: List of channel numbers. [Required]
                 - retrieve_data: Whether to automatically retrieve data after running [Default: True]
             
         Returns:
@@ -450,7 +452,7 @@ class Biologic:
                 - probe_interval: How often to probe in seconds. [Default: 2]
                 - record_interval: How often to record a data point in seconds. [Default: 1]
             **kwargs: Additional keyword arguments:
-                - channels: Optional list of channel numbers
+                - channels: List of channel numbers. [Required]
                 - folder: Folder or file for saving data [Default: None]
                 - by_channel: Save data by channel [Default: False]
             
@@ -480,7 +482,7 @@ class Biologic:
                 - probe_interval: How often to probe in seconds. [Default: 2]
                 - record_interval: How often to record a data point in seconds. [Default: 1]
             **kwargs: Additional keyword arguments:
-                - channels: Optional list of channel numbers
+                - channels: List of channel numbers. [Required]
                 - data: Data folder path. [Default: 'data']
                 - by_channel: Save data by channel. [Default: False]
                 - cv: Parameters passed to CV to find initial MPP, or {} for default. [Default: {}]
@@ -510,7 +512,7 @@ class Biologic:
                 - probe_interval: How often to probe in seconds. [Default: 2]
                 - record_interval: How often to record a data point in seconds. [Default: 1]
             **kwargs: Additional keyword arguments:
-                - channels: Optional list of channel numbers
+                - channels: List of channel numbers. [Required]
                 - data: Data folder path. [Default: 'data']
                 - by_channel: Save data by channel. [Default: False]
                 - cv: Parameters for the CV. [Default: {}]

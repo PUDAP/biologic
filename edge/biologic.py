@@ -267,7 +267,6 @@ class Biologic:
                 - time: Test duration in seconds (float, > 0). [Required]
                 - time_interval: Maximum time between readings (float, > 0.0002 s). [Default: 1]
                 - voltage_interval: Maximum interval between voltage readings (float, 1e-6 to 1 V). [Default: 0.01]
-            **kwargs: Additional keyword arguments passed to program constructor:
                 - channels: List of channel numbers. [Required]
                 - retrieve_data: Whether to automatically retrieve data after running [Default: True]
             
@@ -295,7 +294,6 @@ class Biologic:
                 - time_interval: Maximum time interval between points (float, 0.0002 to 1000 s). [Default: 1]
                 - current_interval: Maximum current change between points (float, ±1e-12 to current_range A). [Default: 0.001]
                 - current_range: Current range. Use ec_lib.IRange (typically ±1 A). Available: IRange.p100 (±100 pA), IRange.n1 (±1 nA), IRange.u1 (±1 µA), IRange.m1 (±1 mA), IRange.m10 (±10 mA), IRange.a1 (±1 A). Can be provided as a string (e.g., "IRange.m10") which will be automatically converted. [Default: IRange.m10]
-            **kwargs: Additional keyword arguments passed to program constructor:
                 - channels: List of channel numbers. [Required]
                 - retrieve_data: Whether to automatically retrieve data after running [Default: True]
             
@@ -322,7 +320,6 @@ class Biologic:
                 - vs_initial: If step is vs. initial or previous. [Default: False]
                 - time_interval: Maximum time interval between points in seconds. (float, 0.0002 to 1000). [Default: 1]
                 - voltage_interval: Maximum voltage change between points in Volts. (float, 1e-4 to 1e-2). [Default: 0.001]
-            **kwargs: Additional keyword arguments passed to program constructor:
                 - channels: List of channel numbers. [Required]
                 - retrieve_data: Whether to automatically retrieve data after running [Default: True]
         """
@@ -355,7 +352,6 @@ class Biologic:
                 - repeat: Number of times to repeat the measurement and average the values for each frequency. (int, 1 to 10). [Default: 1]
                 - correction: Drift correction. [Default: False]
                 - wait: Adds a delay before the measurement at each frequency. The delay is expressed as a fraction of the period. (float, 0 to 5). [Default: 0]
-            **kwargs: Additional keyword arguments passed to program constructor:
                 - channels: List of channel numbers. [Required]
                 - retrieve_data: Whether to automatically retrieve data after running [Default: True]
 
@@ -391,7 +387,6 @@ class Biologic:
                 - repeat: Number of times to repeat the measurement and average the values for each frequency. (int, 1 to 10). [Default: 1]
                 - correction: Drift correction. [Default: False]
                 - wait: Adds a delay before the measurement at each frequency. The delay is expressed as a fraction of the period. (float, 0 to 5). [Default: 0]
-            **kwargs: Additional keyword arguments passed to program constructor:
                 - channels: List of channel numbers. [Required]
                 - retrieve_data: Whether to automatically retrieve data after running [Default: True]
             
@@ -423,7 +418,6 @@ class Biologic:
                 - N_Cycles: Number of cycles. (int, 0 to 1000). [Default: 0]
                 - voltage_range: Voltage range. Use ec_lib.ERange. Available: ERange.v2_5, ERange.v5, ERange.v10, ERange.AUTO. Can be provided as a string (e.g., "ERange.AUTO") which will be automatically converted. [Default: AUTO]
                 - current_range: Current range. Use ec_lib.IRange. Available: IRange.p100 (±100 pA), IRange.n1 (±1 nA), IRange.u1 (±1 µA), IRange.m1 (±1 mA), IRange.m10 (±10 mA), IRange.a1 (±1 A), IRange.AUTO. Can be provided as a string (e.g., "IRange.m10") which will be automatically converted. [Default: AUTO]
-            **kwargs: Additional keyword arguments passed to program constructor:
                 - channels: List of channel numbers. [Required]
                 - retrieve_data: Whether to automatically retrieve data after running [Default: True]
             
@@ -451,7 +445,6 @@ class Biologic:
                 - probe_points: Number of data points to collect for probe. [Default: 5]
                 - probe_interval: How often to probe in seconds. [Default: 2]
                 - record_interval: How often to record a data point in seconds. [Default: 1]
-            **kwargs: Additional keyword arguments:
                 - channels: List of channel numbers. [Required]
                 - folder: Folder or file for saving data [Default: None]
                 - by_channel: Save data by channel [Default: False]
@@ -481,7 +474,6 @@ class Biologic:
                 - probe_points: Number of data points to collect for probe. [Default: 5]
                 - probe_interval: How often to probe in seconds. [Default: 2]
                 - record_interval: How often to record a data point in seconds. [Default: 1]
-            **kwargs: Additional keyword arguments:
                 - channels: List of channel numbers. [Required]
                 - data: Data folder path. [Default: 'data']
                 - by_channel: Save data by channel. [Default: False]
@@ -511,7 +503,6 @@ class Biologic:
                 - probe_points: Number of data points to collect for probe. [Default: 5]
                 - probe_interval: How often to probe in seconds. [Default: 2]
                 - record_interval: How often to record a data point in seconds. [Default: 1]
-            **kwargs: Additional keyword arguments:
                 - channels: List of channel numbers. [Required]
                 - data: Data folder path. [Default: 'data']
                 - by_channel: Save data by channel. [Default: False]

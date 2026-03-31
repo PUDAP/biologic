@@ -44,7 +44,7 @@ def load_config() -> Config:
     try:
         return Config()
     except Exception as e:
-        logger.error("Failed to load configuration: %s", e, exc_info=True)
+        logger.error("Failed to load configuration: %s", e)
         sys.exit(1)
 
 

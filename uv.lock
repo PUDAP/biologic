@@ -32,7 +32,7 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "puda-biologic", specifier = "==0.0.8" },
-    { name = "puda-comms", specifier = "==0.0.10" },
+    { name = "puda-comms", specifier = "==0.0.12" },
     { name = "pydantic", specifier = ">=2.12.5" },
     { name = "pydantic-settings", specifier = ">=2.12.0" },
     { name = "python-dotenv", specifier = ">=1.2.1" },
@@ -59,15 +59,15 @@ wheels = [
 
 [[package]]
 name = "puda-comms"
-version = "0.0.10"
+version = "0.0.12"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "nats-py" },
     { name = "pydantic" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/1f/28/88fe2c6b83990bacd9f01c1676a016dc62f9034c8a588e91fe750536ad8b/puda_comms-0.0.10.tar.gz", hash = "sha256:22f16d091dc76b6976446ca10aa7a05c82a819b8a23c8e1f01ebc19f817ad6c0", size = 26925, upload-time = "2026-03-12T06:31:17.283Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/68/45/a462a7c6105037f8b6ff349dc04523ce2575304cec5eedb6ec9d0186dbec/puda_comms-0.0.12.tar.gz", hash = "sha256:20365d84882eac02c43b287209c257d9176b08368d87fb6f73e69198e00f1b38", size = 26921, upload-time = "2026-04-02T08:09:30.916Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/2c/8d/9f219b0e2acf60ce8968e6f029ad676718696646edbd8eaa529019bc03a4/puda_comms-0.0.10-py3-none-any.whl", hash = "sha256:6b20a6f614f7f9b5d8318b89c041fbd23ea70ccde9fcb304f8059d00e06da9be", size = 31160, upload-time = "2026-03-12T06:31:16.006Z" },
+    { url = "https://files.pythonhosted.org/packages/7b/63/cd1421d17d0f65d13df2c23dda8ac6ee06072f8918bd6b2c20821515497e/puda_comms-0.0.12-py3-none-any.whl", hash = "sha256:0c6c3b7a973d07d09840c3d50ff4625e011592a0a9deb976b57575fd8cb7a669", size = 31144, upload-time = "2026-04-02T08:09:28.996Z" },
 ]
 
 [[package]]

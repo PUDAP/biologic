@@ -271,7 +271,20 @@ class Biologic:
                 - retrieve_data: Whether to automatically retrieve data after running [Default: True]
             
         Returns:
-            Dictionary containing the OCV data (keyed by channel)
+            Dict[str, List[List[float]]]: Channel-keyed measurement data.
+
+            Data schema (OCV):
+                row = [potential, current, time, extra, flag]
+                primary_x = "time"
+                primary_y = "potential"
+
+                Index | Name      | Unit | Meaning
+                ------|-----------|------|-----------------------------------------
+                0     | potential | V    | Working electrode potential
+                1     | current   | A    | Measured current
+                2     | time      | s    | Elapsed time
+                3     | extra     | -    | Internal metadata/auxiliary value
+                4     | flag      | -    | Status/cycle boundary indicator
         """
         if params is None:
             params, kwargs = self._split_kwargs(kwargs)
@@ -298,7 +311,20 @@ class Biologic:
                 - retrieve_data: Whether to automatically retrieve data after running [Default: True]
             
         Returns:
-            Dictionary containing the CA data (keyed by channel)
+            Dict[str, List[List[float]]]: Channel-keyed measurement data.
+
+            Data schema (CA):
+                row = [time, current, voltage, extra, flag]
+                primary_x = "time"
+                primary_y = "current"
+
+                Index | Name    | Unit | Meaning
+                ------|---------|------|-----------------------------------------
+                0     | time    | s    | Elapsed time
+                1     | current | A    | Measured current
+                2     | voltage | V    | Applied/measured voltage
+                3     | extra   | -    | Internal metadata/auxiliary value
+                4     | flag    | -    | Status/step boundary indicator
         """
         if params is None:
             params, kwargs = self._split_kwargs(kwargs)
@@ -356,7 +382,20 @@ class Biologic:
                 - retrieve_data: Whether to automatically retrieve data after running [Default: True]
 
         Returns:
-            Dictionary containing the PEIS data (keyed by channel)
+            Dict[str, List[List[float]]]: Channel-keyed measurement data.
+
+            Data schema (PEIS):
+                row = [frequency, Z_real, Z_imag, phase, flag]
+                primary_x = "frequency"
+                primary_y = "Z_real"
+
+                Index | Name      | Unit | Meaning
+                ------|-----------|------|-----------------------------------------
+                0     | frequency | Hz   | Excitation frequency
+                1     | Z_real    | Ω    | Real impedance component
+                2     | Z_imag    | Ω    | Imaginary impedance component
+                3     | phase     | rad  | Impedance phase angle
+                4     | flag      | -    | Status/frequency-step boundary indicator
         """
         if params is None:
             params, kwargs = self._split_kwargs(kwargs)
@@ -391,7 +430,20 @@ class Biologic:
                 - retrieve_data: Whether to automatically retrieve data after running [Default: True]
             
         Returns:
-            Dictionary containing the GEIS data (keyed by channel)
+            Dict[str, List[List[float]]]: Channel-keyed measurement data.
+
+            Data schema (GEIS):
+                row = [frequency, Z_real, Z_imag, phase, flag]
+                primary_x = "frequency"
+                primary_y = "Z_real"
+
+                Index | Name      | Unit | Meaning
+                ------|-----------|------|-----------------------------------------
+                0     | frequency | Hz   | Excitation frequency
+                1     | Z_real    | Ω    | Real impedance component
+                2     | Z_imag    | Ω    | Imaginary impedance component
+                3     | phase     | rad  | Impedance phase angle
+                4     | flag      | -    | Status/frequency-step boundary indicator
         """
         if params is None:
             params, kwargs = self._split_kwargs(kwargs)
@@ -422,7 +474,20 @@ class Biologic:
                 - retrieve_data: Whether to automatically retrieve data after running [Default: True]
             
         Returns:
-            Dictionary containing the CV data (keyed by channel)
+            Dict[str, List[List[float]]]: Channel-keyed measurement data.
+
+            Data schema (CV):
+                row = [potential, current, time, extra, flag]
+                primary_x = "potential"
+                primary_y = "current"
+
+                Index | Name      | Unit | Meaning
+                ------|-----------|------|-----------------------------------------
+                0     | potential | V    | Working electrode potential
+                1     | current   | A    | Measured current
+                2     | time      | s    | Elapsed time
+                3     | extra     | -    | Internal metadata/auxiliary value
+                4     | flag      | -    | Status/cycle boundary indicator
         """
         if params is None:
             params, kwargs = self._split_kwargs(kwargs)

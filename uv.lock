@@ -22,7 +22,7 @@ version = "0.1.0"
 source = { virtual = "edge" }
 dependencies = [
     { name = "puda-biologic" },
-    { name = "puda-comms" },
+    { name = "puda-python" },
     { name = "pydantic" },
     { name = "pydantic-settings" },
     { name = "python-dotenv" },
@@ -32,7 +32,7 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "puda-biologic", specifier = "==0.0.8" },
-    { name = "puda-comms", specifier = "==0.0.14" },
+    { name = "puda-python", specifier = "==0.0.15" },
     { name = "pydantic", specifier = ">=2.12.5" },
     { name = "pydantic-settings", specifier = ">=2.12.0" },
     { name = "python-dotenv", specifier = ">=1.2.1" },
@@ -58,16 +58,16 @@ wheels = [
 ]
 
 [[package]]
-name = "puda-comms"
-version = "0.0.14"
+name = "puda-python"
+version = "0.0.15"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "nats-py" },
     { name = "pydantic" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/4a/79/3c5d804c4487b69b6d19111eb58f91248e5fc617250f2103b03c9855ab2e/puda_comms-0.0.14.tar.gz", hash = "sha256:8ba54f6091f8120a80d2e39d78b56c1d27da404f16a1254e2fb115a41b9639b9", size = 31357, upload-time = "2026-04-21T07:31:18.871Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/3c/0c/a1785efb10439464868728582c49f99fd14a2e6cd3d468e8eb56aa6ca90d/puda_python-0.0.15.tar.gz", hash = "sha256:85154f9f86fbe1c268e636bac52d08485aa8bc3fe2336f11670a03b9ac278d59", size = 31363, upload-time = "2026-04-24T08:52:37.561Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/4c/4c/c4e8cfd529d19f2661c4e425d6bc93b39e00b683dbe77682e0ccc804e25f/puda_comms-0.0.14-py3-none-any.whl", hash = "sha256:6eadbfc28ead6c00f1c608fbaf56bdee850bcf2806dca8d2f73b57b0ceadee03", size = 36367, upload-time = "2026-04-21T07:31:16.921Z" },
+    { url = "https://files.pythonhosted.org/packages/4c/bf/e9241ba2922ba5290a8171dcc3fb857cfe343916f4a7d3f6ff02b32624c5/puda_python-0.0.15-py3-none-any.whl", hash = "sha256:e274ae42048d7aeed12f7f9bbfa48e42c09ab65448b2e5d13231307cd8d76854", size = 36250, upload-time = "2026-04-24T08:52:35.197Z" },
 ]
 
 [[package]]

@@ -11,7 +11,7 @@ import time
 from pydantic import IPvAnyAddress
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from biologic import Biologic
-from puda_comms import EdgeNatsClient, EdgeRunner
+from puda import EdgeNatsClient, EdgeRunner
 
 
 # Configure logging

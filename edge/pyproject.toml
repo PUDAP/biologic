@@ -5,7 +5,7 @@ description = "Edge service for the 'biologic' machine"
 readme = "README.md"
 requires-python = ">=3.14"
 dependencies = [
-    "puda-python==0.0.15",
+    "puda==0.0.15",
     "puda-biologic==0.0.8",
     "pydantic>=2.12.5",
     "pydantic-settings>=2.12.0",

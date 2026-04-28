@@ -21,8 +21,8 @@ name = "biologic-edge"
 version = "0.1.0"
 source = { virtual = "edge" }
 dependencies = [
+    { name = "puda" },
     { name = "puda-biologic" },
-    { name = "puda-python" },
     { name = "pydantic" },
     { name = "pydantic-settings" },
     { name = "python-dotenv" },
@@ -31,8 +31,8 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
+    { name = "puda", specifier = "==0.0.15" },
     { name = "puda-biologic", specifier = "==0.0.8" },
-    { name = "puda-python", specifier = "==0.0.15" },
     { name = "pydantic", specifier = ">=2.12.5" },
     { name = "pydantic-settings", specifier = ">=2.12.0" },
     { name = "python-dotenv", specifier = ">=1.2.1" },
@@ -49,25 +49,25 @@ wheels = [
 ]
 
 [[package]]
-name = "puda-biologic"
-version = "0.0.8"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/73/9d/6eab16c5aa1b0b770ccd49aa6f06a5d21d6a54cc1c3d625e7e3fe8565c33/puda_biologic-0.0.8.tar.gz", hash = "sha256:7b1fea12643b1b6caefa86879c790d19596bf311ec2079eb7916ce5a9d3d1afe", size = 34121103, upload-time = "2026-02-24T02:34:03.77Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/8d/05/dad6ce89dfe52f2d5f8cc769cdfc8158d985a1bcf085bf9a4df297fcd687/puda_biologic-0.0.8-py3-none-any.whl", hash = "sha256:5ee7a80ca86533f783f9c8041f9e33e53a7ab3711db340477a52aa4ca823fbea", size = 35896733, upload-time = "2026-02-24T02:35:04.631Z" },
-]
-
-[[package]]
-name = "puda-python"
+name = "puda"
 version = "0.0.15"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "nats-py" },
     { name = "pydantic" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/3c/0c/a1785efb10439464868728582c49f99fd14a2e6cd3d468e8eb56aa6ca90d/puda_python-0.0.15.tar.gz", hash = "sha256:85154f9f86fbe1c268e636bac52d08485aa8bc3fe2336f11670a03b9ac278d59", size = 31363, upload-time = "2026-04-24T08:52:37.561Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/19/d1/d921c4df6c0cb311c223e0aea9b3f5d2fdb6ff92fdefad543e9ab242bbf4/puda-0.0.15.tar.gz", hash = "sha256:d2394a6c6ba29f6a3765bcc66cb98d859845640c45b5d036d1a2afc7f522164c", size = 31362, upload-time = "2026-04-28T02:34:14.695Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/4c/bf/e9241ba2922ba5290a8171dcc3fb857cfe343916f4a7d3f6ff02b32624c5/puda_python-0.0.15-py3-none-any.whl", hash = "sha256:e274ae42048d7aeed12f7f9bbfa48e42c09ab65448b2e5d13231307cd8d76854", size = 36250, upload-time = "2026-04-24T08:52:35.197Z" },
+    { url = "https://files.pythonhosted.org/packages/01/a2/fe3d1d6f7b29a87b991486436cc8b9b0dd9aaed3ad7c8b0eb5f0403900de/puda-0.0.15-py3-none-any.whl", hash = "sha256:d65689567c5518b071ed5fd5f829d1854b3f6639b7609c3bab07a84ce28c797c", size = 36198, upload-time = "2026-04-28T02:34:16.225Z" },
+]
+
+[[package]]
+name = "puda-biologic"
+version = "0.0.8"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/73/9d/6eab16c5aa1b0b770ccd49aa6f06a5d21d6a54cc1c3d625e7e3fe8565c33/puda_biologic-0.0.8.tar.gz", hash = "sha256:7b1fea12643b1b6caefa86879c790d19596bf311ec2079eb7916ce5a9d3d1afe", size = 34121103, upload-time = "2026-02-24T02:34:03.77Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/8d/05/dad6ce89dfe52f2d5f8cc769cdfc8158d985a1bcf085bf9a4df297fcd687/puda_biologic-0.0.8-py3-none-any.whl", hash = "sha256:5ee7a80ca86533f783f9c8041f9e33e53a7ab3711db340477a52aa4ca823fbea", size = 35896733, upload-time = "2026-02-24T02:35:04.631Z" },
 ]
 
 [[package]]

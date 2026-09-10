@@ -2,11 +2,6 @@ version = 1
 revision = 3
 requires-python = ">=3.14"
 
-[manifest]
-members = [
-    "biologic-edge",
-]
-
 [[package]]
 name = "annotated-types"
 version = "0.7.0"
@@ -19,7 +14,7 @@ wheels = [
 [[package]]
 name = "biologic-edge"
 version = "0.1.0"
-source = { virtual = "edge" }
+source = { virtual = "." }
 dependencies = [
     { name = "psutil" },
     { name = "puda" },
@@ -32,8 +27,8 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
-    { name = "psutil", specifier = ">=6.0.0" },
-    { name = "puda", specifier = "==0.0.15" },
+    { name = "psutil", specifier = ">=6.1.1" },
+    { name = "puda", specifier = ">=0.0.17" },
     { name = "puda-biologic", specifier = "==0.0.8" },
     { name = "pydantic", specifier = ">=2.12.5" },
     { name = "pydantic-settings", specifier = ">=2.12.0" },
@@ -74,15 +69,15 @@ wheels = [
 
 [[package]]
 name = "puda"
-version = "0.0.15"
+version = "0.0.17"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "nats-py" },
     { name = "pydantic" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/19/d1/d921c4df6c0cb311c223e0aea9b3f5d2fdb6ff92fdefad543e9ab242bbf4/puda-0.0.15.tar.gz", hash = "sha256:d2394a6c6ba29f6a3765bcc66cb98d859845640c45b5d036d1a2afc7f522164c", size = 31362, upload-time = "2026-04-28T02:34:14.695Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/1f/4a/219e4d4b83db575d1298a57c538ceb3d6cd4e1fdad6d96e8ec308e451ce4/puda-0.0.17.tar.gz", hash = "sha256:bd1d483789b4ab9b47c3b95d98a68608e55e16fa2857ac2817a1dcc870958587", size = 36050, upload-time = "2026-09-09T06:40:43.001Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/01/a2/fe3d1d6f7b29a87b991486436cc8b9b0dd9aaed3ad7c8b0eb5f0403900de/puda-0.0.15-py3-none-any.whl", hash = "sha256:d65689567c5518b071ed5fd5f829d1854b3f6639b7609c3bab07a84ce28c797c", size = 36198, upload-time = "2026-04-28T02:34:16.225Z" },
+    { url = "https://files.pythonhosted.org/packages/fd/7f/cdf7eda7ac6957dcb7d82f1f2661eaab1fcc609c3cc2e91039b9538475d9/puda-0.0.17-py3-none-any.whl", hash = "sha256:a7d008bf77aaab131b18ab77f233fd0dbacb7daaff87acbd06191141e9442a87", size = 40831, upload-time = "2026-09-09T06:40:41.262Z" },
 ]
 
 [[package]]

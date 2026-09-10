@@ -1,13 +1,13 @@
 services:
-  biologic:
+  edge:
     build:
-      context: ..
-      dockerfile: edge/Dockerfile
-    image: ghcr.io/pudap/biologic-edge:latest
-    container_name: biologic-edge
+      context: .
+      dockerfile: Dockerfile
+    image: ghcr.io/pudap/${MACHINE_ID}-edge:latest
+    container_name: ${MACHINE_ID}-edge
     restart: unless-stopped
-    env_file:
-      - .env
+    volumes:
+      - ./.env:/app/.env:ro
     healthcheck:
       test: ["CMD", "uv", "run", "python", "-c", "import sys; sys.exit(0)"]
       interval: 30s

@@ -1,17 +1,24 @@
 """
-BiologicMachine class for handling Biologic device commands.
+BioLogic potentiostat driver.
 
-This module provides a wrapper around easy_biologic that enables dynamic command
-handling via getattr, allowing command-based execution patterns for Biologic
-electrochemical testing devices.
+Public methods decorated with ``@command`` are advertised on NATS. Helpers stay
+private (leading underscore). Technique handlers accept either a ``params`` dict
+or flat keyword arguments::
+
+    driver.CV(params={"start": 0.0, "end": 0.5}, channels=[0])
+    driver.CV(start=0.0, end=0.5, channels=[0])
 """
-import sys
+from __future__ import annotations
+
 import logging
-from typing import Dict, Any, Type
+import sys
+from typing import Any, Type
+
+from puda import command, safety
 
 logger = logging.getLogger(__name__)
 
-# only import easy_biologic on windows
+# EC-Lab native libraries are Windows-only.
 if sys.platform == "win32":
     import puda_biologic as ebl
     import puda_biologic.base_programs as blp
@@ -21,56 +28,50 @@ else:
     blp = None
     ec_lib = None
 
-class Params(dict):
-    """
-    A dict subclass that supports both dict-like operations and attribute access.
-    
-    This allows easy_biologic programs to use both:
-    - if "sweep" in params:  (dict membership)
-    - if params.sweep == "log":  (attribute access)
-    """
+
+class _Params(dict):
+    """Dict that also allows attribute access for easy_biologic programs."""
+
     def __getattr__(self, name):
         if name in self:
             return self[name]
-        raise AttributeError(f"'Params' object has no attribute '{name}'")
-    
+        raise AttributeError(f"'_Params' object has no attribute '{name}'")
+
     def __setattr__(self, name, value):
         self[name] = value
 
-# Helper function to convert IRange string to IRange object
+
 def _convert_irange_string(irange_str: str):
     """
     Convert a string representation of IRange to the actual IRange object.
-    
+
     Supports formats:
     - "IRange.m10" -> IRange.m10
     - "m10" -> IRange.m10
-    - "IRange.p100" -> IRange.p100
-    - etc.
-    
+
     Args:
         irange_str: String representation of IRange (e.g., "IRange.m10" or "m10")
-        
+
     Returns:
         IRange object if conversion successful, otherwise returns the original string
-        
+
     Raises:
         ValueError: If the string doesn't match a valid IRange value
     """
     if not isinstance(irange_str, str):
         return irange_str
-    
-    # Remove "IRange." prefix if present
+
     if irange_str.startswith("IRange."):
-        irange_name = irange_str[7:]  # Remove "IRange." prefix
+        irange_name = irange_str[7:]
     else:
         irange_name = irange_str
-    
-    # Try to get the IRange attribute
+
     try:
         return getattr(ec_lib.IRange, irange_name)
     except AttributeError:
-        raise ValueError(f"Invalid IRange value: {irange_str}. Valid values are: p100, n1, u1, m1, m10, a1, AUTO")
+        raise ValueError(
+            f"Invalid IRange value: {irange_str}. Valid values are: p100, n1, u1, m1, m10, a1, AUTO"
+        )
 
 
 def _convert_erange_string(erange_str: str):
@@ -80,8 +81,6 @@ def _convert_erange_string(erange_str: str):
     Supports formats:
     - "ERange.v2_5" -> ERange.v2_5
     - "v2_5" -> ERange.v2_5
-    - "ERange.AUTO" -> ERange.AUTO
-    - etc.
 
     Args:
         erange_str: String representation of ERange (e.g., "ERange.v10" or "v10")
@@ -95,13 +94,11 @@ def _convert_erange_string(erange_str: str):
     if not isinstance(erange_str, str):
         return erange_str
 
-    # Remove "ERange." prefix if present
     if erange_str.startswith("ERange."):
-        erange_name = erange_str[7:]  # Remove "ERange." prefix
+        erange_name = erange_str[7:]
     else:
         erange_name = erange_str
 
-    # Try to get the ERange attribute
     try:
         return getattr(ec_lib.ERange, erange_name)
     except AttributeError:
@@ -110,32 +107,20 @@ def _convert_erange_string(erange_str: str):
         )
 
 
-class Biologic:
-    """
-    Wrapper around easy_biologic that provides command handlers for Biologic devices.
-    
-    This class wraps easy_biologic.base_programs to allow for dynamic method lookup
-    via getattr, enabling command-based execution patterns. Each method (OCV, CA, PEIS, etc.)
-    wraps the corresponding base program class and provides a consistent interface.
-    
-    Methods accept either a ``params`` dict or flat keyword arguments, so both
-    calling conventions work::
-
-        handler(params={"time": 60}, channels=[1, 2])   # direct call
-        handler(time=60, channels=[1, 2])                # edge_runner **params style
-    """
+class Driver:
+    """BioLogic potentiostat. Runs EC-Lab techniques (OCV, CA, CP, CV, PEIS, GEIS, MPP) over Ethernet."""
 
     _META_KEYS = frozenset({
-        'channels', 'retrieve_data', 'data', 'by_channel', 'cv', 'folder',
+        "channels", "retrieve_data", "data", "by_channel", "cv", "folder",
     })
-    
+
     @staticmethod
     def _split_kwargs(all_kwargs: dict) -> tuple[dict, dict]:
         """Separate program params from constructor/run meta kwargs."""
         meta = {}
         params = {}
         for k, v in all_kwargs.items():
-            if k in Biologic._META_KEYS:
+            if k in Driver._META_KEYS:
                 meta[k] = v
             else:
                 params[k] = v
@@ -143,44 +128,59 @@ class Biologic:
 
     def __init__(self, device_ip: str):
         """
-        Initialize the Biologic machine.
-        
+        Connect to the BioLogic instrument.
+
         Args:
-            device_ip: IP address of the Biologic device
+            device_ip: Ethernet address of the potentiostat
         """
         self.device_ip = device_ip
         self.device = None
-        logger.info("BiologicMachine initialized with IP: %s (device not yet started)", device_ip)
-    
-    def startup(self):
-        """
-        Start up the Biologic device connection.
-        
-        This method initializes the BiologicDevice and should be called
-        before running any commands. This allows for delayed initialization
-        and better control over when the device connection is established.
-        """
+        self._startup()
+
+    def _startup(self) -> None:
+        """Open the EC-Lab device connection."""
+        if ebl is None:
+            raise RuntimeError(
+                "BioLogic EC-Lab libraries are only available on Windows. "
+                f"Current platform: {sys.platform}"
+            )
         if self.device is not None:
             logger.warning("BiologicDevice already initialized, skipping startup")
             return
-        
         self.device = ebl.BiologicDevice(self.device_ip)
         logger.info("BiologicDevice started with IP: %s", self.device_ip)
-    
+
+    def _disconnect(self) -> None:
+        """Best-effort close of the EC-Lab connection."""
+        if self.device is None:
+            return
+        disconnect = getattr(self.device, "disconnect", None)
+        if callable(disconnect):
+            disconnect()
+        self.device = None
+        logger.info("BiologicDevice disconnected")
+
+    def snapshot(self) -> dict:
+        """Connection fields merged into MACHINE_STATE KV updates."""
+        return {
+            "connected": self.device is not None,
+            "device_ip": self.device_ip,
+        }
+
     def _run_base_program(
         self,
-        program_class: Type[blp.BiologicProgram],
+        program_class: Type[Any],
         params: dict[str, Any],
         **kwargs
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Generic helper method to run any base program.
-        
+
         This method handles the common pattern:
         1. Create the program instance with params and kwargs
         2. Run the program (with appropriate signature)
         3. Return the data
-        
+
         Args:
             program_class: The base program class to instantiate (e.g., blp.OCV, blp.CA)
             params: Dictionary of parameters for the program
@@ -188,80 +188,117 @@ class Biologic:
                 - For standard programs: retrieve_data [Default: True]
                 - For MPP/MPP_Cycles: data, by_channel, cv
                 - channels: List of channel numbers (for constructor). [Required]
-            
+
         Returns:
             Dictionary containing the program data
-            
+
         Raises:
-            RuntimeError: If startup() has not been called to initialize the device
+            RuntimeError: If the device is not connected
+            ValueError: If channels is missing
         """
         if self.device is None:
-            raise RuntimeError("Device not initialized. Call startup() before running programs.")
+            raise RuntimeError("Device not initialized. Call reset() before running programs.")
         if "channels" not in kwargs or kwargs["channels"] is None:
             raise ValueError("'channels' is required and must be provided for all programs.")
-        # Convert current_range from string to IRange object if needed
-        if 'current_range' in params and isinstance(params['current_range'], str):
+        if "current_range" in params and isinstance(params["current_range"], str):
             try:
-                params['current_range'] = _convert_irange_string(params['current_range'])
+                params["current_range"] = _convert_irange_string(params["current_range"])
             except (ValueError, AttributeError) as e:
-                logger.warning("Failed to convert current_range string '%s' to IRange object: %s. Using as-is.", 
-                             params['current_range'], e)
+                logger.warning(
+                    "Failed to convert current_range string '%s' to IRange object: %s. Using as-is.",
+                    params["current_range"], e,
+                )
 
-        # Convert voltage_range from string to ERange object if needed
-        if 'voltage_range' in params and isinstance(params['voltage_range'], str):
+        if "voltage_range" in params and isinstance(params["voltage_range"], str):
             try:
-                params['voltage_range'] = _convert_erange_string(params['voltage_range'])
+                params["voltage_range"] = _convert_erange_string(params["voltage_range"])
             except (ValueError, AttributeError) as e:
                 logger.warning(
                     "Failed to convert voltage_range string '%s' to ERange object: %s. Using as-is.",
-                    params['voltage_range'], e
+                    params["voltage_range"], e,
                 )
 
-        # Convert dict to Params object for all programs
-        params = Params(params)
-        
-        # Check program class type to determine run signature
-        # MPP and MPP_Cycles use: data, by_channel, cv
-        # MPP_Tracking uses: folder, by_channel
-        # Standard programs use: retrieve_data
+        params = _Params(params)
+
         if issubclass(program_class, blp.MPP):
-            # MPP/MPP_Cycles style: extract run parameters
-            data = kwargs.pop('data', 'data')
-            by_channel = kwargs.pop('by_channel', False)
-            cv_params = kwargs.pop('cv', {})
-            run_kwargs = {'data': data, 'by_channel': by_channel, 'cv': cv_params}
+            data = kwargs.pop("data", "data")
+            by_channel = kwargs.pop("by_channel", False)
+            cv_params = kwargs.pop("cv", {})
+            run_kwargs = {"data": data, "by_channel": by_channel, "cv": cv_params}
         elif program_class == blp.MPP_Tracking:
-            # MPP_Tracking style: extract run parameters
-            folder = kwargs.pop('folder', None)
-            by_channel = kwargs.pop('by_channel', False)
-            run_kwargs = {'folder': folder, 'by_channel': by_channel}
+            folder = kwargs.pop("folder", None)
+            by_channel = kwargs.pop("by_channel", False)
+            run_kwargs = {"folder": folder, "by_channel": by_channel}
         else:
-            # Standard program style: extract retrieve_data
-            retrieve_data = kwargs.pop('retrieve_data', True)
-            run_kwargs = {'retrieve_data': retrieve_data}
-        
-        # Create program instance - pass all remaining kwargs directly to constructor
+            retrieve_data = kwargs.pop("retrieve_data", True)
+            run_kwargs = {"retrieve_data": retrieve_data}
+
         program = program_class(
             device=self.device,
             params=params,
             **kwargs
         )
-        
-        # Run the program with appropriate signature
+
         program.run(**run_kwargs)
-        
+
         return program.data
 
-    ### Base programs ###
-    
+    @command
+    def shutdown(self) -> bool:
+        """
+        Release the EC-Lab connection. Used on edge restart.
+
+        Returns:
+            bool: True if the connection was released
+        """
+        self._disconnect()
+        return True
+
+    @command
+    def home(self) -> bool:
+        """
+        Confirm the potentiostat is connected. There is no mechanical home.
+
+        Returns:
+            bool: True if the device is connected
+
+        Raises:
+            RuntimeError: If the device is not connected
+        """
+        if self.device is None:
+            raise RuntimeError("Device not connected. Call reset() first.")
+        logger.info("Home is a no-op on BioLogic; device is connected at %s", self.device_ip)
+        return True
+
+    @command
+    @safety(
+        summary="Drops and reopens the EC-Lab session, aborting any running technique.",
+        hazards=["electrical"],
+        requires="No measurement should be in progress unless aborting it is intended.",
+    )
+    def reset(self) -> bool:
+        """
+        Software reset. Disconnects and reconnects the potentiostat.
+
+        Returns:
+            bool: True if the device reconnected
+
+        Raises:
+            RuntimeError: If reconnection fails
+        """
+        self._disconnect()
+        self._startup()
+        return True
+
+    @command
     def OCV(
         self,
         params: dict[str, Any] | None = None,
         **kwargs
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Run OCV (Open Circuit Voltage) test.
-        
+
         Args:
             params: Dictionary containing:
                 - time: Test duration in seconds (float, > 0). [Required]
@@ -269,7 +306,7 @@ class Biologic:
                 - voltage_interval: Maximum interval between voltage readings (float, 1e-6 to 1 V). [Default: 0.01]
                 - channels: List of channel numbers. [Required]
                 - retrieve_data: Whether to automatically retrieve data after running [Default: True]
-            
+
         Returns:
             Dict[str, List[List[float]]]: Channel-keyed measurement data.
 
@@ -290,15 +327,16 @@ class Biologic:
             params, kwargs = self._split_kwargs(kwargs)
         logger.info("Running OCV test: params=%s, kwargs=%s", params, kwargs)
         return self._run_base_program(blp.OCV, params, **kwargs)
-        
+
+    @command
     def CA(
         self,
         params: dict[str, Any] | None = None,
         **kwargs
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Run CA (Chronoamperometry) test.
-        
+
         Args:
             params: Dictionary containing:
                 - voltages: List of voltages in Volts (list[float], each element: -10 to 10 V). [Required]
@@ -309,7 +347,7 @@ class Biologic:
                 - current_range: Current range. Use ec_lib.IRange (typically ±1 A). Available: IRange.p100 (±100 pA), IRange.n1 (±1 nA), IRange.u1 (±1 µA), IRange.m1 (±1 mA), IRange.m10 (±10 mA), IRange.a1 (±1 A). Can be provided as a string (e.g., "IRange.m10") which will be automatically converted. [Default: IRange.m10]
                 - channels: List of channel numbers. [Required]
                 - retrieve_data: Whether to automatically retrieve data after running [Default: True]
-            
+
         Returns:
             Dict[str, List[List[float]]]: Channel-keyed measurement data.
 
@@ -331,13 +369,14 @@ class Biologic:
         logger.info("Running CA test: params=%s, kwargs=%s", params, kwargs)
         return self._run_base_program(blp.CA, params, **kwargs)
 
+    @command
     def CP(
         self,
         params: dict[str, Any] | None = None,
         **kwargs
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
-        Run CP (Chronoamperometry) test.
+        Run CP (Chronopotentiometry) test.
 
         Args:
             params: Dictionary containing:
@@ -348,21 +387,24 @@ class Biologic:
                 - voltage_interval: Maximum voltage change between points in Volts. (float, 1e-4 to 1e-2). [Default: 0.001]
                 - channels: List of channel numbers. [Required]
                 - retrieve_data: Whether to automatically retrieve data after running [Default: True]
+
+        Returns:
+            Dictionary containing the CP data (keyed by channel)
         """
         if params is None:
             params, kwargs = self._split_kwargs(kwargs)
         logger.info("Running CP test: params=%s, kwargs=%s", params, kwargs)
         return self._run_base_program(blp.CP, params, **kwargs)
 
-  
+    @command
     def PEIS(
         self,
         params: dict[str, Any] | None = None,
         **kwargs
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Run PEIS (Potentiostatic Electrochemical Impedance Spectroscopy) test.
-        
+
         Args:
             params: Dictionary containing:
                 - voltage: Initial potential in Volts. (float, -10 to 10 V) [Required]
@@ -402,15 +444,15 @@ class Biologic:
         logger.info("Running PEIS test: params=%s, kwargs=%s", params, kwargs)
         return self._run_base_program(blp.PEIS, params, **kwargs)
 
-
+    @command
     def GEIS(
         self,
         params: dict[str, Any] | None = None,
         **kwargs
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Run GEIS (Galvanostatic Electrochemical Impedance Spectroscopy) test.
-        
+
         Args:
             params: Dictionary containing:
                 - current: Initial current in Ampere. (float, 1e-12 to current_range A) [Required]
@@ -428,7 +470,7 @@ class Biologic:
                 - wait: Adds a delay before the measurement at each frequency. The delay is expressed as a fraction of the period. (float, 0 to 5). [Default: 0]
                 - channels: List of channel numbers. [Required]
                 - retrieve_data: Whether to automatically retrieve data after running [Default: True]
-            
+
         Returns:
             Dict[str, List[List[float]]]: Channel-keyed measurement data.
 
@@ -449,15 +491,16 @@ class Biologic:
             params, kwargs = self._split_kwargs(kwargs)
         logger.info("Running GEIS test: params=%s, kwargs=%s", params, kwargs)
         return self._run_base_program(blp.GEIS, params, **kwargs)
-      
+
+    @command
     def CV(
         self,
         params: dict[str, Any] | None = None,
         **kwargs
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Run CV (Cyclic Voltammetry) test.
-        
+
         Args:
             params: Dictionary containing:
                 - start: Start voltage. (float, -10 to 10 V). [Default: 0]
@@ -472,7 +515,7 @@ class Biologic:
                 - current_range: Current range. Use ec_lib.IRange. Available: IRange.p100 (±100 pA), IRange.n1 (±1 nA), IRange.u1 (±1 µA), IRange.m1 (±1 mA), IRange.m10 (±10 mA), IRange.a1 (±1 A), IRange.AUTO. Can be provided as a string (e.g., "IRange.m10") which will be automatically converted. [Default: AUTO]
                 - channels: List of channel numbers. [Required]
                 - retrieve_data: Whether to automatically retrieve data after running [Default: True]
-            
+
         Returns:
             Dict[str, List[List[float]]]: Channel-keyed measurement data.
 
@@ -493,15 +536,16 @@ class Biologic:
             params, kwargs = self._split_kwargs(kwargs)
         logger.info("Running CV test: params=%s, kwargs=%s", params, kwargs)
         return self._run_base_program(blp.CV, params, **kwargs)
-      
+
+    @command
     def MPP_Tracking(
         self,
         params: dict[str, Any] | None = None,
         **kwargs
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Run MPP_Tracking (Maximum Power Point Tracking) test.
-        
+
         Args:
             params: Dictionary containing:
                 - run_time: Run time in seconds. [Required]
@@ -513,7 +557,7 @@ class Biologic:
                 - channels: List of channel numbers. [Required]
                 - folder: Folder or file for saving data [Default: None]
                 - by_channel: Save data by channel [Default: False]
-            
+
         Returns:
             Dictionary containing the MPP_Tracking data (keyed by channel)
         """
@@ -521,17 +565,18 @@ class Biologic:
             params, kwargs = self._split_kwargs(kwargs)
         logger.info("Running MPP_Tracking test: params=%s, kwargs=%s", params, kwargs)
         return self._run_base_program(blp.MPP_Tracking, params, **kwargs)
-    
+
+    @command
     def MPP(
         self,
         params: dict[str, Any] | None = None,
         **kwargs
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Run MPP (Maximum Power Point) test.
-        
+
         Makes a CV scan and Voc scan and runs MPP tracking.
-        
+
         Args:
             params: Dictionary containing:
                 - run_time: Run time in seconds. [Required]
@@ -543,7 +588,7 @@ class Biologic:
                 - data: Data folder path. [Default: 'data']
                 - by_channel: Save data by channel. [Default: False]
                 - cv: Parameters passed to CV to find initial MPP, or {} for default. [Default: {}]
-            
+
         Returns:
             Dictionary containing the MPP data (keyed by channel)
         """
@@ -551,15 +596,16 @@ class Biologic:
             params, kwargs = self._split_kwargs(kwargs)
         logger.info("Running MPP test: params=%s, kwargs=%s", params, kwargs)
         return self._run_base_program(blp.MPP, params, **kwargs)
-    
+
+    @command
     def MPP_Cycles(
         self,
         params: dict[str, Any] | None = None,
         **kwargs
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Run MPP_Cycles (MPP tracking with periodic CV scans) test.
-        
+
         Args:
             params: Dictionary containing:
                 - run_time: Cycle run time in seconds. [Required]
@@ -572,7 +618,7 @@ class Biologic:
                 - data: Data folder path. [Default: 'data']
                 - by_channel: Save data by channel. [Default: False]
                 - cv: Parameters for the CV. [Default: {}]
-            
+
         Returns:
             Dictionary containing the MPP_Cycles data (keyed by channel)
         """

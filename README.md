@@ -1,63 +1,60 @@
 # biologic
 
-Monorepo for the Biologic edge service.
+PUDA edge service for BioLogic potentiostats (SP, VSP, VMP, and similar EC-Lab instruments).
 
-## What It Does
-
-- Runs the Biologic machine edge service.
-- Connects to NATS and translates commands into machine actions.
-- Communicates with the Biologic device over the network (IP).
+Connects to NATS, advertises electrochemical techniques as machine commands, and talks to the instrument over Ethernet.
 
 ## Prerequisites
 
-- Docker and Docker Compose installed
-- Python 3.14+ and `uv` (for baremetal mode)
-- Biologic device reachable on the network
+- Windows host with the BioLogic EC-Lab / `puda-biologic` native libraries
+- Python 3.14+ and `uv` (for baremetal)
+- Docker and Docker Compose (optional)
+- Potentiostat reachable on the network
 
 ## Environment Setup
 
 From repo root:
 
 ```bash
-cp edge/.env.example edge/.env
+cp .env.example .env
 ```
 
-Edit `edge/.env` and configure:
+Edit `.env` and fill in:
 
-- `MACHINE_ID`
-- `NATS_SERVERS`
-- `BIOLOGIC_IP`
+- `MACHINE_ID` — machine identifier (default: `biologic`)
+- `NATS_SERVERS` — comma-separated NATS server URLs
+- `BIOLOGIC_IP` — Ethernet address of the potentiostat
 
 ## Run With Docker (Recommended)
 
-All commands below are run from repo root.
+All commands below run from repo root.
 
 Build and start:
 
 ```bash
-docker compose -f edge/compose.yml up -d --build
+docker compose -f compose.yml up -d --build
 ```
 
 View logs:
 
 ```bash
-docker compose -f edge/compose.yml logs -f
+docker compose -f compose.yml logs -f
 ```
 
 Stop:
 
 ```bash
-docker compose -f edge/compose.yml down
+docker compose -f compose.yml down
 ```
 
 ## Run Baremetal (uv)
 
-From repo root:
-
 ```bash
-uv sync --all-packages
-uv run --package biologic-edge python edge/main.py
+uv sync
+uv run python main.py
 ```
+
+On Windows you can also double-click `start_edge.bat`.
 
 ## Build and Push Image (GHCR)
 
@@ -67,25 +64,16 @@ Login:
 echo $GITHUB_TOKEN | docker login ghcr.io -u USERNAME --password-stdin
 ```
 
-Build:
+Build and push:
 
 ```bash
-docker compose -f edge/compose.yml build
-```
-
-Push:
-
-```bash
-docker push ghcr.io/PUDAP/biologic-edge:latest
-```
-
-Or with Compose:
-
-```bash
-docker compose -f edge/compose.yml push
+docker compose -f compose.yml build
+docker compose -f compose.yml push
 ```
 
 ## Notes
 
-- Docker build context is workspace root (`..` in `edge/compose.yml`).
-- Dockerfile path is `edge/Dockerfile`.
+- Docker build context is the repository root.
+- Dockerfile path is `Dockerfile`.
+- `MACHINE_ID` in `.env` is used for NATS subject routing and Docker image/container naming.
+- The EC-Lab driver is Windows-only. Linux can load the edge process but cannot talk to hardware.

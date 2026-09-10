@@ -6,6 +6,7 @@ tmp
 out-tsc
 
 # Python
+.venv
 **/__pycache__/
 *.py[cod]
 *$py.class

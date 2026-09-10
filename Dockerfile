@@ -13,10 +13,9 @@ RUN apt-get update && apt-get install -y \
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
 
 COPY pyproject.toml uv.lock ./
-COPY edge/ ./edge/
 
-RUN uv sync --frozen --no-dev --no-install-project --package biologic-edge
+RUN uv sync --frozen --no-dev --no-install-project
 
-WORKDIR /app/edge
+COPY . .
 
 CMD ["uv", "run", "python", "main.py"]

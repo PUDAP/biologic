@@ -1,18 +1,21 @@
 """
-Main entry point for the Biologic machine edge service.
+Main entry point for the biologic machine edge service.
 
-This module provides the main event loop for the Biologic machine, handling command
-execution via NATS messaging, telemetry publishing, and connection management.
+This module provides the main event loop for the BioLogic potentiostat,
+handling command execution via NATS messaging, telemetry publishing, and
+connection management.
 """
+
+import asyncio
 import logging
 import sys
 import time
-import asyncio
 import psutil
+from pathlib import Path
 from pydantic import IPvAnyAddress
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from biologic import Biologic
 from puda import EdgeNatsClient, EdgeRunner
+from driver import Driver
 
 
 # Configure logging
@@ -21,8 +24,9 @@ logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     force=True,
 )
-logging.getLogger("puda_drivers").setLevel(logging.WARNING)
+logging.getLogger("driver").setLevel(logging.WARNING)
 logger = logging.getLogger(__name__)
+
 
 # Environment configuration
 class Config(BaseSettings):
@@ -31,7 +35,7 @@ class Config(BaseSettings):
     biologic_ip: IPvAnyAddress
 
     model_config = SettingsConfigDict(
-        env_file=".env",
+        env_file=Path(__file__).resolve().parent / ".env",
         env_file_encoding="utf-8",
         case_sensitive=False,
     )
@@ -40,25 +44,25 @@ class Config(BaseSettings):
     def nats_server_list(self) -> list[str]:
         return [s.strip() for s in self.nats_servers.split(",") if s.strip()]
 
+
 def load_config() -> Config:
     """Load and validate configuration; exit process on failure."""
     try:
         return Config()
     except Exception as e:
-        logger.error("Failed to load configuration: %s", e)
+        logger.error("Failed to load configuration: %s", e, exc_info=True)
         sys.exit(1)
 
 
 async def main():
-    """Initialize the Biologic machine driver and NATS client, then run the edge runner."""
+    """Initialize the machine driver and NATS client, then run the edge runner."""
     config = load_config()
     logger.info("Config loaded for %s", config.machine_id)
     logger.info("Full config: %s", config.model_dump())
 
     logger.info("Initializing machine driver")
-    driver = Biologic(device_ip=str(config.biologic_ip))
-    driver.startup()
-    logger.info("Biologic machine initialized successfully")
+    driver = Driver(device_ip=str(config.biologic_ip))
+    logger.info("Machine driver initialized successfully")
 
     logger.info("Connecting to NATS at %s", config.nats_servers)
     edge_nats_client = EdgeNatsClient(
@@ -85,7 +89,7 @@ async def main():
         nats_client=edge_nats_client,
         machine_driver=driver,
         telemetry_handler=telemetry_handler,
-        state_handler=lambda: {},
+        state_handler=driver.snapshot,
     )
     await runner.connect()
     logger.info("NATS client initialized successfully")
@@ -96,14 +100,14 @@ async def main():
     await runner.run()
 
 
-# Run main in a loop; retry on fatal errors, ignore KeyboardInterrupt.
+# Run main in a loop; retry on fatal errors, exit gracefully on KeyboardInterrupt.
 if __name__ == "__main__":
     while True:
         try:
             asyncio.run(main())
         except KeyboardInterrupt:
-            logger.warning("Received KeyboardInterrupt, but continuing to run...")
-            time.sleep(1)
+            logger.warning("Gracefully stopping...")
+            sys.exit(0)
         except Exception as e:
             logger.error("Fatal error: %s", e, exc_info=True)
             time.sleep(5)

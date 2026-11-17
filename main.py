@@ -12,6 +12,9 @@ import sys
 import time
 import psutil
 from pathlib import Path
+from dotenv import load_dotenv
+
+load_dotenv(Path(__file__).resolve().parent / ".env")
 from pydantic import IPvAnyAddress
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from puda import EdgeNatsClient, EdgeRunner
@@ -33,11 +36,14 @@ class Config(BaseSettings):
     machine_id: str
     nats_servers: str
     biologic_ip: IPvAnyAddress
+    puda_nats_ca: str | None = None
+    puda_e2e_key_file: str | None = None
 
     model_config = SettingsConfigDict(
         env_file=Path(__file__).resolve().parent / ".env",
         env_file_encoding="utf-8",
         case_sensitive=False,
+        extra="ignore",
     )
 
     @property
@@ -68,6 +74,8 @@ async def main():
     edge_nats_client = EdgeNatsClient(
         servers=config.nats_server_list,
         machine_id=config.machine_id,
+        ca_file=config.puda_nats_ca,
+        e2e_key_file=config.puda_e2e_key_file,
     )
 
     async def telemetry_handler():

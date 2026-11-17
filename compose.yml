@@ -8,6 +8,7 @@ services:
     restart: unless-stopped
     volumes:
       - ./.env:/app/.env:ro
+      - ./.secrets:/app/.secrets:ro
     healthcheck:
       test: ["CMD", "uv", "run", "python", "-c", "import sys; sys.exit(0)"]
       interval: 30s

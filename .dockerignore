@@ -2,6 +2,7 @@
 .gitignore
 
 .env
+.secrets/
 .env.*
 !.env.example
 

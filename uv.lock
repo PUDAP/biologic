@@ -28,7 +28,7 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "psutil", specifier = ">=6.1.1" },
-    { name = "puda", specifier = "==0.0.22" },
+    { name = "puda", specifier = "==0.0.23" },
     { name = "puda-biologic", specifier = "==0.0.8" },
     { name = "pydantic", specifier = ">=2.12.5" },
     { name = "pydantic-settings", specifier = ">=2.12.0" },
@@ -191,7 +191,7 @@ wheels = [
 
 [[package]]
 name = "puda"
-version = "0.0.22"
+version = "0.0.23"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "cryptography" },
@@ -199,9 +199,9 @@ dependencies = [
     { name = "psutil" },
     { name = "pydantic" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/f8/3b/d08717361c5d09f7db77167964db5ed277661ce488583c76e87b70c6821f/puda-0.0.22.tar.gz", hash = "sha256:97f167a50406fa03bfc15e6e0c7592e6e78747d148e32909d4f1ca4f0c9b86d8", size = 57292, upload-time = "2026-11-17T02:39:55.317Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/eb/e6/1cd51da62757f131b2ea03e3d62a3f756b14d638abfd67d150078c81e2d3/puda-0.0.23.tar.gz", hash = "sha256:1b50eadb375273ed3097e68f3ff95c989a01a7314c6a57da81fc8c8a8aba8aba", size = 59190, upload-time = "2026-11-19T08:46:30.076Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/6b/00/5fb0f2a5a492607b1987b35f2b7ea0616c6d53478586f70f2ed6e9fa1478/puda-0.0.22-py3-none-any.whl", hash = "sha256:e619f8a5728e8101567bdf831c21d4a09566d5eb47ef033f01a3a1e1b42b9eb8", size = 54775, upload-time = "2026-11-17T02:39:53.935Z" },
+    { url = "https://files.pythonhosted.org/packages/ca/1c/761a21e8faaa7d127f25cdddfbaa79add0b70fca40cc81b14a5901f64aa0/puda-0.0.23-py3-none-any.whl", hash = "sha256:b0094ea668ba1c9fc110484876b24b00e8e99771f973754332d645f0e1f912d2", size = 56163, upload-time = "2026-11-19T08:46:28.452Z" },
 ]
 
 [[package]]
